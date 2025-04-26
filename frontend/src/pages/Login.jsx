@@ -4,19 +4,59 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import axios from "axios";
+import { USER_API } from "@/constants/constant";
+import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "@/redux/authSlice";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const dispatch=useDispatch();
+  const user=useSelector((state)=>state.auth.user);
+  const [input,setInput]=useState({
+    email:"",
+    password:"",
+  })
   const navigate = useNavigate();
-
-  const handleLogin = (e) => {
+  
+  const ChangeHandler=(e)=>{
+    setInput({...input,[e.target.name]:e.target.value})
+   }
+  const handleLogin = async(e) => {
     e.preventDefault();
-    if (email === "test@gmail.com" && password === "password") {
-      navigate("/");
-    } else {
-      alert("Invalid credentials");
-    }
+    const {email,password}=input;
+    setLoading(true);
+     try{
+      const response=await axios.post(`${USER_API}/login`,
+        {
+          email:email.trim(),
+          password:password,
+        } ,{
+          headers:{
+            "Content-Type":"application/json",
+          },
+          withCredentials:true,
+        }
+      );
+      if(response.data.success){
+       dispatch(setUser(response.data.user));
+        navigate("/");
+        toast.success(response.data.message || "Login successful.Welcome back.");
+      }
+     }
+     catch(error){      
+      console.error(error);
+     
+        toast.error(
+          error?.response?.data?.message || "Login failed. Please try again."
+        );
+      
+     }
+      finally{
+        setLoading(false);
+      }
+   
   };
 
   return (
@@ -42,8 +82,10 @@ const Login = () => {
                 <Input
                   type="email"
                   placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="email"
+                  value={input.email}
+                  required
+                  onChange={ChangeHandler}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -52,13 +94,15 @@ const Login = () => {
                 <Input
                   type="password"
                   placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
+                  value={input.password}
+                  onChange={ChangeHandler}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm">
-                Sign in
+                {loading ? "Loading..." : "Sign in"}
               </Button>
             </form>
             <div className="mt-6 text-center">

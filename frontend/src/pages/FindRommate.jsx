@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {  useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,45 +13,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import Axios, { all } from "axios";
+import {useEffect} from "react";
+import { USER_API } from "@/constants/constant";
+import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { current } from "@reduxjs/toolkit";
+import DialogBox from "@/components/DialogBox";
 
 
-// Sample user data (Replace with actual backend data)
-const sampleUsers = [
-  {
-    id: 1,
-    name: "John Doe",
-    college: "XYZ University",
-    address: "Hostel Block A, Room 203",
-    gender: "Male",
-    studyHabits: "Night owl",
-    sleepPattern: "Light sleeper",
-    cleanliness: "Very tidy",
-    noiseTolerance: "Medium",
-    smoking: false,
-    drinking: false,
-    bio: "Love programming and looking for a quiet roommate!",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    college: "ABC College",
-    address: "Hostel Block B, Room 101",
-    gender: "Female",
-    studyHabits: "Early bird",
-    sleepPattern: "Heavy sleeper",
-    cleanliness: "Average",
-    noiseTolerance: "High",
-    smoking: true,
-    drinking: true,
-    bio: "Looking for a fun roommate!",
-  },
-];
+
 
 const FindRoommate = () => {
+  const[users,setUsers]=useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
+  const allUsers=useSelector((store)=>store.users.allUsers);
   const [searchQuery, setSearchQuery] = useState("");
+  const user=useSelector((store)=>store.auth.user);
   const [filters, setFilters] = useState({
-    gender: "",
+    gender:"",
     studyHabits: "",
     sleepPattern: "",
     cleanliness: "",
@@ -81,33 +63,58 @@ const FindRoommate = () => {
     }));
   };
 
+  const handleChatClick = (id) => {
+    if (!user) {
+      setIsDialogOpen(true);
+    } else { 
+     
+      navigate(`/chat/${id}`);
+    } 
+  };
+  const fetchUsers=async()=>{
+    try{
+      setLoading(true);
+      const payload={
+        searchQuery,
+        filters, 
+        users:allUsers,
+        currentUserId:user?._id,
+      };
+      console.log(payload);
+      const response =await Axios.post(`${USER_API}/find/roommate`,
+       payload,
+       {
+        headers:{
+          "Content-Type":"application/json",
+        },
+        withCredentials:true,
+      }
+      );
+      if(response.data.success){
+      setUsers(response.data.filteredArray);
+      }
+      toast.success(response.data.message || "Users fetched successfully.");
+    }
+    catch(error){
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error fetching users.");
+    }
+    finally{
+      setLoading(false);
+    }
+  }
   // Filter users based on search and selected filters
-  const filteredUsers = sampleUsers.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery) ||
-      user.college.toLowerCase().includes(searchQuery) ||
-      user.address.toLowerCase().includes(searchQuery) ||
-      user.bio.toLowerCase().includes(searchQuery);
-
-    const matchesFilters =
-      (!filters.gender || user.gender === filters.gender) &&
-      (!filters.studyHabits || user.studyHabits === filters.studyHabits) &&
-      (!filters.sleepPattern || user.sleepPattern === filters.sleepPattern) &&
-      (!filters.cleanliness || user.cleanliness === filters.cleanliness) &&
-      (!filters.noiseTolerance || user.noiseTolerance === filters.noiseTolerance) &&
-      (!filters.smoking || user.smoking === filters.smoking) &&
-      (!filters.drinking || user.drinking === filters.drinking);
-
-    return matchesSearch && matchesFilters;
-  });
-
+  useEffect(()=>{
+ 
+    fetchUsers();
+  },[searchQuery,filters]);
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       
 
       {/* Main Content */}
-      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:min-w-6xl sm:min-w-0">
+        <h2 className="text-3xl font-bold text-gray-900 text-center mb-8 mt-5">
           Find Your Perfect Roommate
         </h2>
 
@@ -119,7 +126,7 @@ const FindRoommate = () => {
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="Search by name, college, address, or bio..."
+              placeholder="Search by name, college, address,habits or bio..."
               className="mt-1 w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
@@ -148,8 +155,8 @@ const FindRoommate = () => {
                   <SelectValue placeholder="Select Study Habit" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Night owl">Night Owl</SelectItem>
-                  <SelectItem value="Early bird">Early Bird</SelectItem>
+                  <SelectItem value="Night Owl">Night Owl</SelectItem>
+                  <SelectItem value="Early Bird">Early Bird</SelectItem>
                   <SelectItem value="Flexible">Flexible</SelectItem>
                 </SelectContent>
               </Select>
@@ -163,8 +170,8 @@ const FindRoommate = () => {
                   <SelectValue placeholder="Select Sleep Pattern" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Light sleeper">Light Sleeper</SelectItem>
-                  <SelectItem value="Heavy sleeper">Heavy Sleeper</SelectItem>
+                  <SelectItem value="Light Sleeper">Light Sleeper</SelectItem>
+                  <SelectItem value="Heavy Sleeper">Heavy Sleeper</SelectItem>
                   <SelectItem value="Flexible">Flexible</SelectItem>
                 </SelectContent>
               </Select>
@@ -178,7 +185,7 @@ const FindRoommate = () => {
                   <SelectValue placeholder="Select Cleanliness" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Very tidy">Very Tidy</SelectItem>
+                  <SelectItem value="Very Tidy">Very Tidy</SelectItem>
                   <SelectItem value="Average">Average</SelectItem>
                   <SelectItem value="Messy">Messy</SelectItem>
                 </SelectContent>
@@ -220,68 +227,77 @@ const FindRoommate = () => {
           </div>
         </div>
 
-        {/* Filtered Users Section */}
-        <div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">
-            {filteredUsers.length} Roommate{filteredUsers.length !== 1 ? "s" : ""} Found
-          </h3>
-          {filteredUsers.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredUsers.map((user) => (
-                  <Card
-                  key={user.id}
-                  className="hover:shadow-lg transition-shadow duration-300 border-gray-200"
-                >
-                  <CardHeader className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={user.avatarUrl} alt={user.name} />
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
-                        {user.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <CardTitle className="text-lg font-semibold text-gray-900">
-                      {user.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">College:</span> {user.college}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Address:</span> {user.address}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Habits:</span> {user.studyHabits}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Sleep:</span> {user.sleepPattern}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Cleanliness:</span> {user.cleanliness}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Noise:</span> {user.noiseTolerance}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Bio:</span> {user.bio}
-                    </p>
-                    <Button
-                      onClick={() => navigate(`/chat/${user.id}`)}
-                      className="mt-4 w-full bg-blue-600 cursor-pointer hover:bg-blue-700 text-white transition-colors"
-                    >
-                      Message
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+        {
+          loading?(
+            /* Loading Spinner */
+            <div className="flex justify-center items-center h-64">
+              Loading...
             </div>
-          ) : (
-            <p className="text-center text-gray-500">No roommates match your criteria.</p>
-          )}
-        </div>
+          ):(
+            /* Filtered Users Section */
+        <div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          {users.length} Roommate{users.length !== 1 ? "s" : ""} Found
+        </h3>
+        {users.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {users.map((user) => (
+                <Card
+                key={user.id}
+                className="hover:shadow-lg transition-shadow duration-300 border-gray-200"
+              >
+                <CardHeader className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={user.avatarUrl} alt={user.name} />
+                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                      {user.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    {user.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">College:</span> {user.college}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Address:</span> {user.address}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Habits:</span> {user.studyHabits}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Sleep:</span> {user.sleepPattern}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Cleanliness:</span> {user.cleanliness}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Noise:</span> {user.noiseTolerance}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Bio:</span> {user.bio}
+                  </p>
+                  <Button
+                  onClick={()=>handleChatClick(user._id)}
+                    className="mt-4 w-full bg-blue-600 cursor-pointer hover:bg-blue-700 text-white transition-colors"
+                  >
+                    Message
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500">No roommates match your criteria.</p>
+        )}
+      </div>
+          )
+        }
       </div>
 
-                     
+      <DialogBox open={isDialogOpen} onClose={() => setIsDialogOpen(false)} />             
     </div>
   );
 };

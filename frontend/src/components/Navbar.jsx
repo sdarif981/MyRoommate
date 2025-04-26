@@ -8,22 +8,75 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu,ChevronDown,  User, LogOut } from "lucide-react";
+import { Menu, ChevronDown, User, LogOut } from "lucide-react";
+import { useSelector } from "react-redux";
+import DialogBox from "./DialogBox"; // Adjust path as needed
+import axios from "axios";
+import { setUser } from "@/redux/authSlice";
+import { toast } from "sonner";
+import { USER_API } from "@/constants/constant";
+import { useDispatch } from "react-redux";
+// AuthButtons Component (for reuse in both desktop and mobile menus)
+const AuthButtons = ({ onClick, isMobile = false }) => (
+  <div className={isMobile ? "space-y-2" : "flex space-x-3"}>
+    <Button
+      variant={isMobile ? "ghost" : "outline"}
+      asChild
+      className={
+        isMobile
+          ? "w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-semibold"
+          : "border-blue-600 text-blue-600 bg-white hover:bg-blue-100 hover:text-blue-800 px-6 py-2 rounded-full font-semibold transition-all duration-300 shadow-sm hover:shadow-md"
+      }
+    >
+      <Link to="/login" onClick={onClick}>
+        Login
+      </Link>
+    </Button>
+    <Button
+      variant={isMobile ? "ghost" : "default"}
+      asChild
+      className={
+        isMobile
+          ? "w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-semibold"
+          : "bg-gradient-to-r from-blue-600 to-indigo-800 text-white hover:from-blue-700 hover:to-indigo-700 px-6 py-2 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+      }
+    >
+      <Link to="/register" onClick={onClick}>
+        Register
+      </Link>
+    </Button>
+  </div>
+);
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+   const dispatch = useDispatch();
+  const handleLogout = async() => {
 
-  // Mock user data (replace with real data from backend later)
-  const user = {
-    name: "John Doe",
-    avatarUrl: "https://github.com/shadcn.png", // Placeholder image
+    setIsMobileMenuOpen(false);
+    try{
+      const res= await axios.post(`${USER_API}/logout`,{},{withCredentials:true})
+      if(res.data.success){
+        dispatch(setUser(null));
+        navigate("/");
+        toast.success(res.data.message || "Logout successful.");
+      }
+    }catch(error){
+        console.error("Error during logout:", error); 
+    }
+
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear token
-    navigate("/login"); // Redirect to login page
-    setIsMobileMenuOpen(false); // Close mobile menu on logout
+  const handleMessagesClick = () => {
+    if (!user) {
+      setIsDialogOpen(true);
+    } else {
+      navigate("/messages");
+      setIsMobileMenuOpen(false);
+    }
   };
 
   return (
@@ -45,69 +98,73 @@ const Navbar = () => {
             <Button
               variant="ghost"
               asChild
-              className="text-white hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="text-white hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-semibold transition-colors"
             >
-              <Link to="/
-              ">Home</Link>
+              <Link to="/">Home</Link>
             </Button>
-            
+
             <Button
               variant="ghost"
               asChild
-              className="text-white hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="text-white hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-semibold transition-colors"
             >
               <Link to="/find-roommate">Find Roommate</Link>
             </Button>
+
             <Button
               variant="ghost"
-              asChild
-              className="text-white hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="text-white hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-semibold transition-colors"
+              onClick={handleMessagesClick}
             >
-              <Link to="/messages">Messages</Link>
+              Messages
             </Button>
 
-            {/* Profile Dropdown with Avatar */}
-            <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex items-center gap-2 text-white hover:bg-blue-700 px-3 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-        >
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user.avatarUrl} alt={user.name} />
-            <AvatarFallback className="bg-blue-100 text-blue-600">
-              {user.name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden lg:inline text-sm font-medium truncate max-w-[150px]">
-            {user.name}
-          </span>
-          <ChevronDown className="w-4 h-4 text-white" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-56 bg-white border border-gray-200 shadow-lg rounded-md p-1"
-        align="end"
-      >
-        <DropdownMenuItem asChild>
-          <Link
-            to="/profile"
-            className="flex items-center w-full px-3 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors cursor-pointer"
-          >
-            <span> <User className="inline-block mr-2 mb-1" />View Profile</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={handleLogout}
-          className="flex items-center w-full px-3 py-2 text-gray-700 hover:bg-gray-100 hover:text-red-600 rounded-md transition-colors cursor-pointer"
-        >
-          <span> <LogOut className="inline-block mr-2 mb-1" />Logout</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {/* Profile/Login/Register */}
+            {!user ? (
+              <AuthButtons onClick={() => setIsMobileMenuOpen(false)} />
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center gap-2 text-white hover:bg-blue-700 px-3 py-2 rounded-md transition-colors"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatarUrl} alt={user.name} />
+                      <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden lg:inline text-sm font-semibold truncate max-w-[150px]">
+                      {user.name}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-white" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-56 bg-white border border-gray-200 shadow-lg rounded-md p-1"
+                  align="end"
+                >
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/profile"
+                      className="flex items-center w-full px-3 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors cursor-pointer"
+                    >
+                      <User className="inline-block mr-2 mb-1" />
+                      View Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-3 py-2 text-gray-700 hover:bg-gray-100 hover:text-red-600 rounded-md transition-colors cursor-pointer"
+                  >
+                    <LogOut className="inline-block mr-2 mb-1" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle */}
           <div className="md:hidden flex items-center">
             <Button
               variant="ghost"
@@ -122,61 +179,75 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-blue-700">
-              <div className="flex items-center space-x-3 px-3 py-2">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={user.avatarUrl} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="text-lg font-medium">{user.name}</span>
-              </div>
+            <div className="px-2 pt-2 pb-3 space-y-2 sm:px-3 bg-blue-700">
+              {user && (
+                <div className="flex items-center space-x-3 px-3 py-2">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.avatarUrl} alt={user.name} />
+                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-lg font-semibold">{user.name}</span>
+                </div>
+              )}
+
               <Button
                 variant="ghost"
                 asChild
-                className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-medium"
+                className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-semibold"
               >
                 <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
                   Home
                 </Link>
               </Button>
-              <Button
-                variant="ghost"
-                asChild
-                className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-medium"
-              >
-                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
-                  Profile
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                asChild
-                className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-medium"
-              >
-                <Link to="/find-roommate" onClick={() => setIsMobileMenuOpen(false)}>
-                  Find Roommate
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                asChild
-                className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-medium"
-              >
-                <Link to="/messages" onClick={() => setIsMobileMenuOpen(false)}>
-                  Messages
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-medium"
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
+
+              {user ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    asChild
+                    className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-semibold"
+                  >
+                    <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                      Profile
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    asChild
+                    className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-semibold"
+                  >
+                    <Link to="/find-roommate" onClick={() => setIsMobileMenuOpen(false)}>
+                      Find Roommate
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-semibold"
+                    onClick={handleMessagesClick}
+                  >
+                    Messages
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-left text-white hover:bg-blue-800 px-3 py-2 rounded-md text-base font-semibold"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <AuthButtons
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  isMobile={true}
+                />
+              )}
             </div>
           </div>
         )}
       </div>
+
+      {/* Dialog for Messages Access */}
+      <DialogBox open={isDialogOpen} onClose={() => setIsDialogOpen(false)} />
     </nav>
   );
 };

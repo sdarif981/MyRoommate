@@ -4,18 +4,55 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import axios from "axios";
+import { USER_API } from "@/constants/constant";
+import { toast } from "sonner";
 
 const Register = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+const [input,setInput]=useState({
+  name:"",
+  email:"",
+  password:"",
+})
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const ChangeHandler=(e)=>{
+   setInput({...input,[e.target.name]:e.target.value})
+  }
+  const handleRegister = async(e) => {
     e.preventDefault();
-    // TODO: Add actual registration logic (e.g., API call)
-    alert("Registration Successful!");
-    navigate("/login");
+  const {name,email,password}=input;
+  setLoading(true);
+   try{
+    const response=await axios.post(`${USER_API}/register`,
+      {name:name.trim(),
+        email:email.trim(),
+        password:password,
+      } ,{
+        headers:{
+          "Content-Type":"application/json",
+        },
+      }
+    );
+    if(response.data.success){
+
+      navigate("/login");
+      toast.success(response.data.message || "Registration successful. Please login.");
+    }
+   }
+   catch(error){      
+    console.error("Error during registration:", error);
+   
+      toast.error(
+        error?.response?.data?.message || "Registration failed. Please try again."
+      );
+    
+   }
+    finally{
+      setLoading(false);
+    }
+
   };
 
   return (
@@ -39,9 +76,10 @@ const Register = () => {
                 <Input
                   id="name"
                   type="text"
+                  name="name"
                   placeholder="Enter your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={input.name}
+                  onChange={ChangeHandler}
                   required
                   className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -52,10 +90,11 @@ const Register = () => {
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={input.email}
+                  onChange={ChangeHandler}
                   required
                   className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -67,9 +106,10 @@ const Register = () => {
                 <Input
                   id="password"
                   type="password"
+                  name="password"
                   placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={input.password}
+                  onChange={ChangeHandler}
                   required
                   className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -77,8 +117,9 @@ const Register = () => {
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition-colors cursor-pointer"
+                disabled={loading}
               >
-                Register
+                {loading ? "Registering..." : "Register"}
               </Button>
             </form>
             <p className="text-center mt-4 text-gray-600">

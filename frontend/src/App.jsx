@@ -10,6 +10,7 @@ import Chat from "./pages/Chat";
 import Messages from "./pages/Messages";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import UpdateProfile from "./pages/UpdateProfile";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            
           </Routes>
         </div>
 

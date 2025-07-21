@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import io from "socket.io-client";
 import { MESSAGE_API } from "@/constants/constant";
 import axios from "axios";
-const socket = io("https://myroommate.onrender.com", {
+const socket = io("http://localhost:3000", {
   withCredentials: true,
-  reconnectionAttempts: 5,
-  transports: ["websocket"],
 });
 
 const Chat = ({ user }) => {
@@ -18,25 +16,23 @@ const Chat = ({ user }) => {
   const [error, setError] = useState(null);
   const chatContainerRef = useRef(null);
 
-  if (!user?.["_id"]) {
-    return <div className="p-4 text-red-500">⚠️ You must be logged in to chat.</div>;
+  if (!user || !user._id) {
+    return (
+      <div className="p-4 text-red-500">⚠️ You must be logged in to chat.</div>
+    );
   }
 
-  // Fetch & socket setup
   useEffect(() => {
     socket.emit("register", user._id);
 
     const fetchMessages = async () => {
       try {
         const response = await axios.get(`${MESSAGE_API}/${userId}`, {
-  withCredentials: true, 
-});
-
-
+          withCredentials: true,
+        });
         if (!response.ok) throw new Error("Failed to fetch messages");
 
         const data = await response.json();
-
         const formatted = data.map((msg) => ({
           _id: msg._id,
           sender: msg.senderId === user._id ? "you" : "them",
@@ -46,10 +42,8 @@ const Chat = ({ user }) => {
             minute: "2-digit",
           }),
         }));
-
         setMessages(formatted);
       } catch (err) {
-        console.error("Fetch error:", err.message);
         setError("Failed to load messages. Please try again.");
       }
     };
@@ -58,9 +52,7 @@ const Chat = ({ user }) => {
 
     const handleMessage = (data) => {
       setMessages((prev) => {
-        const exists = prev.some((msg) => msg._id === data._id);
-        if (exists) return prev;
-
+        if (prev.some((msg) => msg._id === data._id)) return prev;
         return [
           ...prev,
           {
@@ -83,36 +75,36 @@ const Chat = ({ user }) => {
     };
   }, [userId, user._id]);
 
-  // Auto-scroll on new message
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
   const sendMessage = async () => {
-    const trimmed = messageInput.trim();
-    if (!trimmed) return;
+    if (!messageInput.trim()) return;
 
     try {
-      
-
-const response = await axios.post(`${MESSAGE_API}/send/${userId}`, 
-  { message: trimmed },
-  { withCredentials: true, headers: { "Content-Type": "application/json" } }
-);
+      const response = await fetch(`${MESSAGE_API}/send/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ message: messageInput }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to send message");
       }
 
+      // ✅ Step 1: Show message immediately to sender
       setMessages((prev) => [
         ...prev,
         {
-          _id: `temp-${Date.now()}`,
+          _id: Math.random().toString(36).substr(2, 9),
           sender: "you",
-          text: trimmed,
+          text: messageInput,
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -120,25 +112,21 @@ const response = await axios.post(`${MESSAGE_API}/send/${userId}`,
         },
       ]);
 
+      // Step 2: Clear input
       setMessageInput("");
       setError(null);
-    } catch (err) {
-      console.error("Send error:", err.message);
-      setError(err.message || "Failed to send message");
+    } catch (error) {
+      setError(error.message);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter") sendMessage();
   };
 
   return (
     <div className="p-4 max-w-2xl mx-auto">
       {error && <div className="p-2 mb-4 text-red-500">{error}</div>}
-
       <div
         ref={chatContainerRef}
         className="h-[400px] overflow-y-auto bg-gray-100 p-3 rounded mb-4"
@@ -146,10 +134,12 @@ const response = await axios.post(`${MESSAGE_API}/send/${userId}`,
         {messages.map((msg) => (
           <div
             key={msg._id}
-            className={`mb-2 ${msg.sender === "you" ? "text-right" : "text-left"}`}
+            className={`mb-2 ${
+              msg.sender === "you" ? "text-right" : "text-left"
+            }`}
           >
             <p
-              className={`inline-block px-3 py-1 rounded max-w-[70%] break-words ${
+              className={`inline-block px-3 py-1 rounded ${
                 msg.sender === "you"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-300 text-black"
@@ -161,14 +151,12 @@ const response = await axios.post(`${MESSAGE_API}/send/${userId}`,
           </div>
         ))}
       </div>
-
       <div className="flex gap-2">
         <Input
-          placeholder="Type a message..."
+          placeholder="Type message..."
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={handleKeyPress}
-          className="flex-1"
         />
         <Button onClick={sendMessage}>Send</Button>
       </div>

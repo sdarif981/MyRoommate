@@ -1,6 +1,13 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+// user.controller.js or updateProfile
+import cloudinary from "../utils/cloudinary.js"; // ✅ correct, default export
+
+
+import getDataUri from "../utils/datauri.js";
+
+
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -110,11 +117,19 @@ export const getProfile = async (req, res) => {
   }
 };
 
+
+
+// Already assume you've set Cloudinary config in a separate file
+// cloudinary.config({ cloud_name, api_key, api_secret });
+
+
+
 export const updateProfile = async (req, res) => {
   try {
-    if(!req.body) {
+    if (!req.body) {
       return res.status(400).json({ message: "No data provided", success: false });
     }
+
     const {
       name,
       email,
@@ -129,57 +144,62 @@ export const updateProfile = async (req, res) => {
       smoking,
       drinking,
       bio,
-      
     } = req.body;
-    let user = await User.findById(req.id);
+
+    const user = await User.findById(req.id);
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found", success: false });
+      return res.status(404).json({ message: "User not found", success: false });
     }
-    
- 
-    if (name) {
-      user.name = name;
-    }
+
+    if (name) user.name = name;
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) { 
+      if (!emailRegex.test(email)) {
         return res.status(400).json({ message: "Invalid email format" });
       }
       user.email = email;
     }
 
-    if (college) {
-      user.college = college;
-    }
-    if (address) {
-      user.address = address;
-    }
-    if (gender) {
-      user.gender = gender;
-    }
+    if (college) user.college = college;
+    if (address) user.address = address;
+    if (gender) user.gender = gender;
     if (hobbies) {
-      user.hobbies = hobbies.split(",").map((hobby) => hobby.trim()).filter(hobby=> hobby !== "");
+      user.hobbies = hobbies
+        .split(",")
+        .map((h) => h.trim())
+        .filter((h) => h !== "");
     }
-    if (studyHabits) {
-      user.studyHabits = studyHabits;
-    }
-    if (sleepPattern) {
-      user.sleepPattern = sleepPattern;
-    }
-    if (cleanliness) {
-      user.cleanliness = cleanliness;
-    }
-    if (noiseTolerance) {
-      user.noiseTolerance = noiseTolerance;
-    }
-    if (smoking !== undefined) user.smoking=Boolean(smoking)// Convert string to boolean
-    if (drinking !== undefined) user.drinking = Boolean(drinking)// Convert string to boolean;
-    if (bio) {
-      user.bio = bio;
-    }
+
+    if (studyHabits) user.studyHabits = studyHabits;
+    if (sleepPattern) user.sleepPattern = sleepPattern;
+    if (cleanliness) user.cleanliness = cleanliness;
+    if (noiseTolerance) user.noiseTolerance = noiseTolerance;
+    if (smoking !== undefined) user.smoking = Boolean(smoking);
+    if (drinking !== undefined) user.drinking = Boolean(drinking);
+    if (bio) user.bio = bio;
+
+    // ✅ Cloudinary Upload Logic
+    console.log("Using Cloudinary config:", cloudinary.config());
+
+   if (req.file) {
+  const fileUri = getDataUri(req.file);
+  console.log("Uploading to Cloudinary...");
+
+  const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+    folder: "myroommate/profiles",
+  });
+
+  // console.log("Upload success:", cloudResponse.secure_url);
+
+  if (cloudResponse && cloudResponse.secure_url) {
+    user.avatarUrl = cloudResponse.secure_url;
+  }
+}
+
+
+
     await user.save();
+
     const updatedUser = {
       _id: user._id,
       name: user.name,
@@ -195,11 +215,14 @@ export const updateProfile = async (req, res) => {
       smoking: user.smoking,
       drinking: user.drinking,
       bio: user.bio,
-      // avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatarUrl,
     };
-    return res
-      .status(200)
-      .json({ message: "Profile updated successfully", updatedUser, success: true });
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      updatedUser,
+      success: true,
+    });
   } catch (error) {
     console.error("Error in updateProfile:", error.message, error.stack);
     return res.status(500).json({
@@ -208,6 +231,8 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
+
 
 export const fetchAllUsers = async (req, res) => {
   try {

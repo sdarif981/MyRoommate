@@ -28,7 +28,7 @@ const Profile = () => {
                 <div className="flex justify-center">
                   <Avatar className="h-32 w-32 ring-4 ring-white shadow-md">
                     <AvatarImage
-                      src="https://tse3.mm.bing.net/th/id/OIP.83TJyUAa-HkBJ87X6kukzgAAAA?rs=1&pid=ImgDetMain"
+                      src={user.avatarUrl || "https://via.placeholder.com/150"}
                       alt={user.name}
                       className="object-cover"
                     />

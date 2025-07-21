@@ -86,12 +86,14 @@ const Chat = ({ user }) => {
     if (!messageInput.trim()) return;
 
     try {
-      const response = await fetch(`${MESSAGE_API}/send/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ message: messageInput }),
-      });
+      const response = await axios.post(
+        `${MESSAGE_API}/send/${userId}`,
+        { message: messageInput },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();

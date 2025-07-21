@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import io from "socket.io-client";
 import { MESSAGE_API } from "@/constants/constant";
 import axios from "axios";
-const socket = io("http://localhost:3000", {
+const socket = io("https://myroommate.onrender.com", {
   withCredentials: true,
 });
 
@@ -27,25 +27,27 @@ const Chat = ({ user }) => {
 
     const fetchMessages = async () => {
       try {
-        const response = await axios.get(`${MESSAGE_API}/${userId}`, {
-          withCredentials: true,
-        });
-        if (!response.ok) throw new Error("Failed to fetch messages");
+  const response = await axios.get(`${MESSAGE_API}/${userId}`, {
+    withCredentials: true,
+  });
 
-        const data = await response.json();
-        const formatted = data.map((msg) => ({
-          _id: msg._id,
-          sender: msg.senderId === user._id ? "you" : "them",
-          text: msg.text,
-          timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        }));
-        setMessages(formatted);
-      } catch (err) {
-        setError("Failed to load messages. Please try again.");
-      }
+  const data = response.data;
+
+  const formatted = data.map((msg) => ({
+    _id: msg._id,
+    sender: msg.senderId === user._id ? "you" : "them",
+    text: msg.text,
+    timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  }));
+  setMessages(formatted);
+} catch (err) {
+  console.error("Error loading messages:", err);
+  setError("Failed to load messages. Please try again.");
+}
+
     };
 
     fetchMessages();
@@ -86,40 +88,41 @@ const Chat = ({ user }) => {
     if (!messageInput.trim()) return;
 
     try {
-      const response = await axios.post(
-        `${MESSAGE_API}/send/${userId}`,
-        { message: messageInput },
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to send message");
-      }
-
-      // ✅ Step 1: Show message immediately to sender
-      setMessages((prev) => [
-        ...prev,
-        {
-          _id: Math.random().toString(36).substr(2, 9),
-          sender: "you",
-          text: messageInput,
-          timestamp: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ]);
-
-      // Step 2: Clear input
-      setMessageInput("");
-      setError(null);
-    } catch (error) {
-      setError(error.message);
+  const response = await axios.post(
+    `${MESSAGE_API}/send/${userId}`,
+    { message: messageInput },
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
     }
+  );
+
+  // ✅ axios auto-parses the response
+  const responseData = response.data;
+
+  // Step 1: Show message immediately
+  setMessages((prev) => [
+    ...prev,
+    {
+      _id: Math.random().toString(36).substr(2, 9),
+      sender: "you",
+      text: messageInput,
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    },
+  ]);
+
+  // Step 2: Clear input
+  setMessageInput("");
+  setError(null);
+} catch (error) {
+  const errorMsg =
+    error.response?.data?.message || "Failed to send message.";
+  setError(errorMsg);
+}
+
   };
 
   const handleKeyPress = (e) => {

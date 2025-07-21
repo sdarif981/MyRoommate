@@ -17,7 +17,7 @@ const Messages = () => {
         const res = await axios.get(`${MESSAGE_API}/inbox`, {
           withCredentials: true,
         });
-        const data = await res.json();
+        const data = res.data;
         setChats(data);
       } catch (err) {
         console.error("Failed to load inbox:", err);

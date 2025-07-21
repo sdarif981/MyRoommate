@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import io from "socket.io-client";
+import { MESSAGE_API } from "@/constants/constant";
 
 const socket = io("http://localhost:3000", {
   withCredentials: true,
@@ -27,7 +28,7 @@ const Chat = ({ user }) => {
 
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/message/${userId}`, {
+        const response = await fetch(`${MESSAGE_API}/${userId}`, {
           method: "GET",
           credentials: "include",
         });

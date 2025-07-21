@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 
 
 
-// POST: Send message
+//Send message
 export const sendMessage = async (req, res) => {
   try {
     const senderId = req.id;
@@ -59,7 +59,7 @@ if (io) {
     createdAt: newMessage.createdAt,
   };
 
-  // ✅ Emit only to receiver's room
+  // Emit only to receiver's room
   io.to(receiverId).emit("receive_message", messageData);
 }
 

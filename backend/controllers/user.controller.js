@@ -1,91 +1,125 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-// user.controller.js or updateProfile
-import cloudinary from "../utils/cloudinary.js"; // ✅ correct, default export
-
-
+import cloudinary from "../utils/cloudinary.js"; 
 import getDataUri from "../utils/datauri.js";
 
 
+
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+//register function 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
-    }
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters long" });
-    }
+    let { name, email, password } = req.body;
+
+    name = name?.trim();
+    email = email?.toLowerCase().trim();
+    password = password?.trim();
+
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please fill all the fields" });
+      return res.status(400).json({ message: "All fields are required", success: false });
     }
 
-    const user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format", success: false });
     }
+
+    if (!strongPasswordRegex.test(password)) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters long, include 1 uppercase letter, 1 lowercase letter, and 1 number",
+        success: false,
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists with this email", success: false });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
     });
+
     await newUser.save();
-    res
-      .status(201)
-      .json({ message: "User created successfully", success: true });
+
+    const responseUser = {
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+    };
+
+    return res.status(201).json({
+      message: "User registered successfully",
+      success: true,
+      user: responseUser,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error", success: false });
+    return res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
+
+//login function
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    let user = await User.findOne({ email });
+    let { email, password } = req.body;
+
+    if (typeof email !== "string" || typeof password !== "string") {
+      return res.status(400).json({ message: "Invalid input type", success: false });
+    }
+
+    email = email.trim().toLowerCase();
+    password = password.trim();
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required", success: false });
+    }
+
+    const user = await User.findOne({ email });
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "Invalid email or password", success: false });
+      return res.status(400).json({ message: "Invalid credentials", success: false });
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res
-        .status(400)
-        .json({ message: "Invalid password", success: false });
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({ message: "Invalid credentials", success: false });
     }
-    const tokenData = {
-      id: user._id,
-    };
-    const token = jwt.sign(tokenData, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    user = {
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const safeUser = {
       _id: user._id,
       name: user.name,
       email: user.email,
+      avatarUrl: user.avatarUrl || null,
     };
+
     return res
       .status(200)
       .cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 1 * 24 * 60 * 60 * 1000,
+        sameSite: "Strict",
+        maxAge: 24 * 60 * 60 * 1000,
       })
-      .json({ message: "Login successful", user, success: true });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Internal server error", success: false });
+      .json({ message: "Login successful", user: safeUser, success: true });
+
+  } catch (err) {
+    return res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
+
+//logout function
 export const logout = async (req, res) => {
   try {
     return res
@@ -119,10 +153,7 @@ export const getProfile = async (req, res) => {
 
 
 
-// Already assume you've set Cloudinary config in a separate file
-// cloudinary.config({ cloud_name, api_key, api_secret });
-
-
+//update profile function
 
 export const updateProfile = async (req, res) => {
   try {
@@ -178,7 +209,7 @@ export const updateProfile = async (req, res) => {
     if (drinking !== undefined) user.drinking = Boolean(drinking);
     if (bio) user.bio = bio;
 
-    // ✅ Cloudinary Upload Logic
+   
     console.log("Using Cloudinary config:", cloudinary.config());
 
    if (req.file) {
@@ -189,14 +220,11 @@ export const updateProfile = async (req, res) => {
     folder: "myroommate/profiles",
   });
 
-  // console.log("Upload success:", cloudResponse.secure_url);
 
   if (cloudResponse && cloudResponse.secure_url) {
     user.avatarUrl = cloudResponse.secure_url;
   }
 }
-
-
 
     await user.save();
 
@@ -272,7 +300,6 @@ export const fetchUserById = async (req, res) => {
 export const findRoommate = async (req, res) => {
   try {
 
-  
     const { searchQuery, filters ,users,currentUserId } = req.body;
     if(!req.body){
       console.log("No data provided in request body");

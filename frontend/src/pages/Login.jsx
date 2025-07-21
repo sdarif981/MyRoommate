@@ -1,62 +1,79 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { toast } from "sonner";
+
+import { USER_API } from "@/constants/constant";
+import { setUser } from "@/redux/authSlice";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import axios from "axios";
-import { USER_API } from "@/constants/constant";
-import { toast } from "sonner";
-import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "@/redux/authSlice";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
-  const dispatch=useDispatch();
-  const user=useSelector((state)=>state.auth.user);
-  const [input,setInput]=useState({
-    email:"",
-    password:"",
-  })
+  const [input, setInput] = useState({ email: "", password: "" });
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  
-  const ChangeHandler=(e)=>{
-    setInput({...input,[e.target.name]:e.target.value})
-   }
-  const handleLogin = async(e) => {
+  const user = useSelector((state) => state.auth.user);
+
+  // If already logged in, redirect
+  useEffect(() => {
+    if (user?._id) navigate("/");
+  }, [user, navigate]);
+
+  const handleChange = (e) => {
+    setInput((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const {email,password}=input;
+    if (loading) return;
+
+    const email = input.email.trim();
+    const password = input.password.trim();
+
+    if (!email || !password) {
+      toast.error("Both email and password are required.");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
+
     setLoading(true);
-     try{
-      const response=await axios.post(`${USER_API}/login`,
+    try {
+      const response = await axios.post(
+        `${USER_API}/login`,
+        { email, password },
         {
-          email:email.trim(),
-          password:password,
-        } ,{
-          headers:{
-            "Content-Type":"application/json",
-          },
-          withCredentials:true,
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
         }
       );
-      if(response.data.success){
-       dispatch(setUser(response.data.user));
+
+      if (response.data.success) {
+        dispatch(setUser(response.data.user));
+        toast.success(response.data.message || "Login successful.");
         navigate("/");
-        toast.success(response.data.message || "Login successful.Welcome back.");
+      } else {
+        toast.error(response.data.message || "Login failed.");
       }
-     }
-     catch(error){      
-      console.error(error);
-     
-        toast.error(
-          error?.response?.data?.message || "Login failed. Please try again."
-        );
-      
-     }
-      finally{
-        setLoading(false);
-      }
-   
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error(
+        error?.response?.data?.message || "Login failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,38 +93,52 @@ const Login = () => {
             <h2 className="text-2xl font-bold text-center">Sign in</h2>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-6" autoComplete="on">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Email address</Label>
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Email address
+                </Label>
                 <Input
-                  type="email"
-                  placeholder="Enter your email"
+                  id="email"
                   name="email"
+                  type="email"
                   value={input.email}
+                  onChange={handleChange}
                   required
-                  onChange={ChangeHandler}
+                  autoFocus
+                  placeholder="Enter your email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Password</Label>
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  Password
+                </Label>
                 <Input
-                  type="password"
-                  placeholder="Enter your password"
+                  id="password"
                   name="password"
+                  type="password"
                   value={input.password}
-                  onChange={ChangeHandler}
+                  onChange={handleChange}
                   required
+                  placeholder="Enter your password"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm">
-                {loading ? "Loading..." : "Sign in"}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors"
+              >
+                {loading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
+
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don’t have an account?{" "}
                 <a href="/register" className="font-medium text-blue-600 hover:text-blue-500">
                   Register now
                 </a>

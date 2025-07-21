@@ -9,56 +9,69 @@ import { USER_API } from "@/constants/constant";
 import { toast } from "sonner";
 
 const Register = () => {
-  const [loading, setLoading] = useState(false);
-const [input,setInput]=useState({
-  name:"",
-  email:"",
-  password:"",
-})
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [input, setInput] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
-  const ChangeHandler=(e)=>{
-   setInput({...input,[e.target.name]:e.target.value})
-  }
-  const handleRegister = async(e) => {
+  const handleChange = (e) =>
+    setInput({ ...input, [e.target.name]: e.target.value });
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-  const {name,email,password}=input;
-  setLoading(true);
-   try{
-    const response=await axios.post(`${USER_API}/register`,
-      {name:name.trim(),
-        email:email.trim(),
-        password:password,
-      } ,{
-        headers:{
-          "Content-Type":"application/json",
-        },
-      }
-    );
-    if(response.data.success){
+    const name = input.name.trim();
+    const email = input.email.trim();
+    const password = input.password;
 
-      navigate("/login");
-      toast.success(response.data.message || "Registration successful. Please login.");
+    if (!name || !email || !password) {
+      toast.error("All fields are required.");
+      return;
     }
-   }
-   catch(error){      
-    console.error("Error during registration:", error);
-   
-      toast.error(
-        error?.response?.data?.message || "Registration failed. Please try again."
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${USER_API}/register`,
+        { name, email, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
-    
-   }
-    finally{
+
+      if (response.data.success) {
+        toast.success(response.data.message || "Registration successful. Please log in.");
+        navigate("/login");
+      } else {
+        toast.error("Registration failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      toast.error(
+        error?.response?.data?.message || "Something went wrong. Try again later."
+      );
+    } finally {
       setLoading(false);
     }
-
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-    
-      {/* Main Content */}
       <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <Card className="w-full max-w-md shadow-md border-gray-200 rounded-lg">
           <CardHeader className="pb-4">
@@ -70,63 +83,61 @@ const [input,setInput]=useState({
           <CardContent className="p-6">
             <form onSubmit={handleRegister} className="space-y-6">
               <div>
-                <Label htmlFor="name" className="text-gray-700 font-medium">
-                  Name
-                </Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
-                  type="text"
                   name="name"
-                  placeholder="Enter your name"
+                  type="text"
                   value={input.name}
-                  onChange={ChangeHandler}
+                  onChange={handleChange}
+                  placeholder="Enter your name"
                   required
-                  className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  disabled={loading}
                 />
               </div>
+
               <div>
-                <Label htmlFor="email" className="text-gray-700 font-medium">
-                  Email
-                </Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Enter your email"
                   value={input.email}
-                  onChange={ChangeHandler}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
                   required
-                  className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  disabled={loading}
                 />
               </div>
+
               <div>
-                <Label htmlFor="password" className="text-gray-700 font-medium">
-                  Password
-                </Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
-                  type="password"
                   name="password"
-                  placeholder="Enter your password"
+                  type="password"
                   value={input.password}
-                  onChange={ChangeHandler}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
                   required
-                  className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  disabled={loading}
                 />
               </div>
+
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition-colors cursor-pointer"
                 disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition-colors"
               >
                 {loading ? "Registering..." : "Register"}
               </Button>
             </form>
+
             <p className="text-center mt-4 text-gray-600">
               Already have an account?{" "}
               <a
                 href="/login"
-                className="text-blue-600 hover:underline font-medium cursor-pointer"
+                className="text-blue-600 hover:underline font-medium"
               >
                 Login
               </a>
@@ -134,8 +145,6 @@ const [input,setInput]=useState({
           </CardContent>
         </Card>
       </div>
-
-     
     </div>
   );
 };

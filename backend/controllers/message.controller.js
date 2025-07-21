@@ -3,10 +3,6 @@ import { Conversation } from "../models/conversationModel.js";
 
 import mongoose from "mongoose";
 
-
-
-
-
 //Send message
 export const sendMessage = async (req, res) => {
   try {
@@ -50,19 +46,18 @@ export const sendMessage = async (req, res) => {
     // Emit via Socket.IO only to the receiver
     const io = req.app.get("io");
 
-if (io) {
-  const messageData = {
-    _id: newMessage._id,
-    senderId,
-    receiverId,
-    message,
-    createdAt: newMessage.createdAt,
-  };
+    if (io) {
+      const messageData = {
+        _id: newMessage._id,
+        senderId,
+        receiverId,
+        message,
+        createdAt: newMessage.createdAt,
+      };
 
-  // Emit only to receiver's room
-  io.to(receiverId).emit("receive_message", messageData);
-}
-
+      // Emit only to receiver's room
+      io.to(receiverId).emit("receive_message", messageData);
+    }
 
     // Respond to sender
     return res.status(200).json({
@@ -77,10 +72,11 @@ if (io) {
     });
   } catch (error) {
     console.error("SendMessage Error:", error);
-    return res.status(500).json({ message: error.message || "Internal server error" });
+    return res
+      .status(500)
+      .json({ message: error.message || "Internal server error" });
   }
 };
-
 
 export const getMessages = async (req, res) => {
   try {
@@ -112,10 +108,11 @@ export const getMessages = async (req, res) => {
     return res.status(200).json(formattedMessages);
   } catch (error) {
     console.error("GetMessages Error:", error);
-    return res.status(500).json({ message: error.message || "Internal server error" });
+    return res
+      .status(500)
+      .json({ message: error.message || "Internal server error" });
   }
 };
-
 
 export const getInboxChats = async (req, res) => {
   try {
@@ -130,7 +127,9 @@ export const getInboxChats = async (req, res) => {
       .sort({ updatedAt: -1 });
 
     const chats = conversations.map((conv) => {
-      const otherUser = conv.participants.find((p) => p._id.toString() !== userId);
+      const otherUser = conv.participants.find(
+        (p) => p._id.toString() !== userId
+      );
       const lastMessage = conv.messages[0];
 
       return {
@@ -139,9 +138,11 @@ export const getInboxChats = async (req, res) => {
         avatar: otherUser.avatarUrl,
         lastMessage: lastMessage?.message || "No messages yet",
         time: lastMessage
-          ? new Date(lastMessage.createdAt).toLocaleTimeString([], {
+          ? new Date(lastMessage.createdAt).toLocaleTimeString("en-IN", {
               hour: "2-digit",
               minute: "2-digit",
+              hour12: true,
+              timeZone: "Asia/Kolkata",
             })
           : "",
         unread: 0, // optional: add real unread count later

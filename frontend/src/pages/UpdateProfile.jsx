@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Label } from "@/components/ui/label";
@@ -22,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { setUser } from "@/redux/authSlice";
-
 import { USER_API } from "@/constants/constant";
 import axios from "axios";
 import { toast } from "sonner";
@@ -73,6 +71,9 @@ const UpdateProfile = ({ open, setOpen }) => {
   const handleSave = async (e) => {
     e.preventDefault();
 
+    console.log("input.smoking:", input.smoking, typeof input.smoking);
+    console.log("input.drinking:", input.drinking, typeof input.drinking);
+
     const formData = new FormData();
     formData.append("name", input.name);
     formData.append("email", input.email);
@@ -84,12 +85,12 @@ const UpdateProfile = ({ open, setOpen }) => {
     formData.append("sleepPattern", input.sleepPattern);
     formData.append("cleanliness", input.cleanliness);
     formData.append("noiseTolerance", input.noiseTolerance);
-    formData.append("smoking", input.smoking);
-    formData.append("drinking", input.drinking);
+    formData.append("smoking", input.smoking === true); // Ensure boolean
+    formData.append("drinking", input.drinking === true); // Ensure boolean
     formData.append("bio", input.bio);
 
     if (input.avatar) {
-      formData.append("avatarUrl", input.avatar); // ✅ important
+      formData.append("avatarUrl", input.avatar);
     }
 
     try {
@@ -100,7 +101,12 @@ const UpdateProfile = ({ open, setOpen }) => {
       });
 
       if (res.data.success) {
-        dispatch(setUser(res.data.updatedUser));
+        const normalizedUser = {
+          ...res.data.updatedUser,
+          smoking: !!res.data.updatedUser.smoking, // Convert to boolean
+          drinking: !!res.data.updatedUser.drinking, // Convert to boolean
+        };
+        dispatch(setUser(normalizedUser));
         toast.success(res.data.message || "Profile updated successfully");
         navigate("/profile");
         setOpen(false);
@@ -154,7 +160,6 @@ const UpdateProfile = ({ open, setOpen }) => {
             />
           </div>
 
-          {/* Form Inputs Start */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <Label>Name</Label>
@@ -267,7 +272,6 @@ const UpdateProfile = ({ open, setOpen }) => {
             </div>
           </div>
 
-          {/* Checkboxes */}
           <div className="flex gap-6">
             <div className="flex items-center gap-3">
               <Checkbox

@@ -11,11 +11,13 @@ const Profile = () => {
   const [open, setOpen] = useState(false);
   const user = useSelector((store) => store.auth.user);
 
+  console.log("user.smoking:", user.smoking, typeof user.smoking);
+  console.log("user.drinking:", user.drinking, typeof user.drinking);
+
   return (
     <>
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 ">
-        {/* Main Content */}
-        <div className="flex-grow  max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:min-w-xl sm:min-w-0">
+        <div className="flex-grow max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:min-w-xl sm:min-w-0">
           <Card className="shadow-xl border-none rounded-2xl bg-white overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-6">
               <CardTitle className="text-3xl font-bold text-center tracking-tight">
@@ -24,7 +26,6 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="p-8">
               <div className="space-y-8">
-                {/* Profile Picture Display */}
                 <div className="flex justify-center">
                   <Avatar className="h-32 w-32 ring-4 ring-white shadow-md">
                     <AvatarImage
@@ -37,7 +38,6 @@ const Profile = () => {
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                {/* Profile Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
@@ -105,13 +105,13 @@ const Profile = () => {
                     <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                       Smoking
                     </span>
-                    <span className="mt-1 text-lg text-gray-900">{user.smoking ? "Yes" : "No"}</span>
+                    <span className="mt-1 text-lg text-gray-900">{user.smoking === true ? "Yes" : "No"}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                       Drinking
                     </span>
-                    <span className="mt-1 text-lg text-gray-900">{user.drinking ? "Yes" : "No"}</span>
+                    <span className="mt-1 text-lg text-gray-900">{user.drinking === true ? "Yes" : "No"}</span>
                   </div>
                   <div className="flex flex-col sm:col-span-2">
                     <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">

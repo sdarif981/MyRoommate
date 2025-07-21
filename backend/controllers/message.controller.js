@@ -115,3 +115,42 @@ export const getMessages = async (req, res) => {
     return res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
+
+
+export const getInboxChats = async (req, res) => {
+  try {
+    const userId = req.id;
+
+    const conversations = await Conversation.find({ participants: userId })
+      .populate("participants", "name avatarUrl email") // populate other user
+      .populate({
+        path: "messages",
+        options: { sort: { createdAt: -1 }, limit: 1 },
+      })
+      .sort({ updatedAt: -1 });
+
+    const chats = conversations.map((conv) => {
+      const otherUser = conv.participants.find((p) => p._id.toString() !== userId);
+      const lastMessage = conv.messages[0];
+
+      return {
+        _id: otherUser._id,
+        name: otherUser.name,
+        avatar: otherUser.avatarUrl,
+        lastMessage: lastMessage?.message || "No messages yet",
+        time: lastMessage
+          ? new Date(lastMessage.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "",
+        unread: 0, // optional: add real unread count later
+      };
+    });
+
+    res.status(200).json(chats);
+  } catch (error) {
+    console.error("Inbox fetch failed:", error);
+    res.status(500).json({ message: "Failed to fetch inbox." });
+  }
+};

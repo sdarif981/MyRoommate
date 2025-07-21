@@ -1,40 +1,53 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 
-// Sample chat data (Replace with backend data)
-
-
 const Messages = () => {
-  const users=useSelector((store)=>store.users.allUsers);
+  const [chats, setChats] = useState([]);
   const navigate = useNavigate();
-   let user=useSelector((store)=>store.auth.user);
+  const user = useSelector((store) => store.auth.user);
+
+  useEffect(() => {
+    const fetchInbox = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/message/inbox", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setChats(data);
+      } catch (err) {
+        console.error("Failed to load inbox:", err);
+      }
+    };
+
+    fetchInbox();
+  }, []);
+
+  const filteredChats = chats.filter((chat) => chat._id !== user._id);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-     
-
-      {/* Main Content */}
       <div className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Messages</h2>
           <Button
-            className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            onClick={() => navigate("/find-roommate")} // Redirect to find a new chat
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            onClick={() => navigate("/find-roommate")}
           >
             New Message
           </Button>
         </div>
 
-        {/* Recent Chats */}
+        {/* Chat List */}
         <div className="space-y-4">
-          {users.length > 0 ? (
-            users.map((chat) => (
+          {filteredChats.length > 0 ? (
+            filteredChats.map((chat) => (
               <Card
-                key={chat.id}
+                key={chat._id}
                 className="cursor-pointer w-[65vw] hover:shadow-lg transition-shadow duration-300 border border-gray-200 bg-white"
                 onClick={() => navigate(`/chat/${chat._id}`)}
               >
@@ -42,7 +55,7 @@ const Messages = () => {
                   <Avatar className="h-12 w-12 flex-shrink-0">
                     <AvatarImage src={chat.avatar} alt={chat.name} />
                     <AvatarFallback className="bg-blue-100 text-blue-600 text-lg">
-                      {chat.name.charAt(0)}
+                      {chat.name?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
@@ -51,10 +64,12 @@ const Messages = () => {
                         {chat.name}
                       </p>
                       <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {chat.time}
+                        {chat.time || "Just now"}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 truncate mt-1">{chat.lastMessage}</p>
+                    <p className="text-sm text-gray-600 truncate mt-1">
+                      {chat.lastMessage || "Start chatting..."}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {chat.unread > 0 && (
@@ -65,10 +80,10 @@ const Messages = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-gray-300 cursor-pointer text-gray-700 hover:bg-gray-100 transition-colors"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent card click from triggering
-                         navigate(`/chat/${chat._id}`);
+                        e.stopPropagation();
+                        navigate(`/chat/${chat._id}`);
                       }}
                     >
                       Chat
@@ -88,8 +103,6 @@ const Messages = () => {
           )}
         </div>
       </div>
-
-      
     </div>
   );
 };

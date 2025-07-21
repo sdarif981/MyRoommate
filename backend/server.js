@@ -18,7 +18,7 @@ const server = http.createServer(app); // Create HTTP server
 // Setup Socket.IO server
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173","https://my-roommate-zeta.vercel.app/" ],// frontend port
+    origin: ["http://localhost:5173","https://my-roommate-zeta.vercel.app" ],// frontend port
     credentials: true,
   },
 });
@@ -43,7 +43,7 @@ const users = {}; // { userId: socketId }
 
 
 // Middleware
-app.use(cors({ origin: ["http://localhost:5173","https://my-roommate-zeta.vercel.app/" ], credentials: true }));
+app.use(cors({ origin: ["http://localhost:5173","https://my-roommate-zeta.vercel.app" ], credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));

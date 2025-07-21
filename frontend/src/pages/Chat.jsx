@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import io from "socket.io-client";
 import { MESSAGE_API } from "@/constants/constant";
 
-const socket = io("http://localhost:3000", {
+const socket = io("https://myroommate.onrender.com", {
   withCredentials: true,
   reconnectionAttempts: 5,
   transports: ["websocket"],
@@ -95,7 +95,7 @@ const Chat = ({ user }) => {
     if (!trimmed) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/message/send/${userId}`, {
+      const response = await fetch(`${MESSAGE_API}/send/${userId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

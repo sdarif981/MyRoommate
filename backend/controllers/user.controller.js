@@ -205,12 +205,14 @@ export const updateProfile = async (req, res) => {
     if (sleepPattern) user.sleepPattern = sleepPattern;
     if (cleanliness) user.cleanliness = cleanliness;
     if (noiseTolerance) user.noiseTolerance = noiseTolerance;
-    if (smoking !== undefined) user.smoking = Boolean(smoking);
-    if (drinking !== undefined) user.drinking = Boolean(drinking);
+    if (smoking =="true") user.smoking = true
+    else user.smoking = false;
+    if(drinking == "true") user.drinking = true
+    else user.drinking = false;
     if (bio) user.bio = bio;
 
-   
-    console.log("Using Cloudinary config:", cloudinary.config());
+    // ✅ Cloudinary Upload Logic
+    // console.log("Using Cloudinary config:", cloudinary.config());
 
    if (req.file) {
   const fileUri = getDataUri(req.file);
@@ -220,11 +222,14 @@ export const updateProfile = async (req, res) => {
     folder: "myroommate/profiles",
   });
 
+  // console.log("Upload success:", cloudResponse.secure_url);
 
   if (cloudResponse && cloudResponse.secure_url) {
     user.avatarUrl = cloudResponse.secure_url;
   }
 }
+
+
 
     await user.save();
 
@@ -259,6 +264,7 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
 
 
 

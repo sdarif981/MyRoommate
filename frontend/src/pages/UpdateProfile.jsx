@@ -85,8 +85,8 @@ const UpdateProfile = ({ open, setOpen }) => {
     formData.append("sleepPattern", input.sleepPattern);
     formData.append("cleanliness", input.cleanliness);
     formData.append("noiseTolerance", input.noiseTolerance);
-    formData.append("smoking", input.smoking === true); // Ensure boolean
-    formData.append("drinking", input.drinking === true); // Ensure boolean
+    formData.append("smoking", input.smoking ? "true" : "false");
+  formData.append("drinking", input.drinking ? "true" : "false"); // Ensure boolean
     formData.append("bio", input.bio);
 
     if (input.avatar) {

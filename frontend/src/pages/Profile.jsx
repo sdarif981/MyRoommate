@@ -105,13 +105,13 @@ const Profile = () => {
                     <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                       Smoking
                     </span>
-                    <span className="mt-1 text-lg text-gray-900">{user.smoking === true ? "Yes" : "No"}</span>
+                    <span className="mt-1 text-lg text-gray-900">{user.smoking === true || user.smoking === "true" ? "Yes" : "No"}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                       Drinking
                     </span>
-                    <span className="mt-1 text-lg text-gray-900">{user.drinking === true ? "Yes" : "No"}</span>
+                    <span className="mt-1 text-lg text-gray-900">{user.drinking === true || user.drinking === "true" ? "Yes" : "No"}</span>
                   </div>
                   <div className="flex flex-col sm:col-span-2">
                     <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">

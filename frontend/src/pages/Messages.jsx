@@ -2,37 +2,15 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
 
 // Sample chat data (Replace with backend data)
-const recentChats = [
-  {
-    id: 1,
-    name: "John Doe",
-    lastMessage: "Hey! How's it going?",
-    avatar: "https://github.com/shadcn.png", // Placeholder image
-    time: "2m ago",
-    unread: 2,
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    lastMessage: "Are we still meeting?",
-    avatar: "https://github.com/shadcn.png",
-    time: "1h ago",
-    unread: 0,
-  },
-  {
-    id: 3,
-    name: "Michael Lee",
-    lastMessage: "Cool, let's do it!",
-    avatar: "https://github.com/shadcn.png",
-    time: "3h ago",
-    unread: 1,
-  },
-];
+
 
 const Messages = () => {
+  const users=useSelector((store)=>store.users.allUsers);
   const navigate = useNavigate();
+   let user=useSelector((store)=>store.auth.user);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -53,12 +31,12 @@ const Messages = () => {
 
         {/* Recent Chats */}
         <div className="space-y-4">
-          {recentChats.length > 0 ? (
-            recentChats.map((chat) => (
+          {users.length > 0 ? (
+            users.map((chat) => (
               <Card
                 key={chat.id}
                 className="cursor-pointer w-[65vw] hover:shadow-lg transition-shadow duration-300 border border-gray-200 bg-white"
-                onClick={() => navigate(`/chat/${chat.id}`)}
+                onClick={() => navigate(`/chat/${chat._id}`)}
               >
                 <CardContent className="flex items-center p-4 space-x-4">
                   <Avatar className="h-12 w-12 flex-shrink-0">
@@ -90,7 +68,7 @@ const Messages = () => {
                       className="border-gray-300 cursor-pointer text-gray-700 hover:bg-gray-100 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent card click from triggering
-                        navigate(`/chat/${chat.id}`);
+                         navigate(`/chat/${chat._id}`);
                       }}
                     >
                       Chat

@@ -1,5 +1,5 @@
 import express from "express";
-import { login, logout, register, getProfile, updateProfile, fetchAllUsers, fetchUserById, findRoommate } from "../controllers/user.controller.js";
+import { login, logout, register, getProfile, updateProfile, fetchAllUsers, fetchUserById, findRoommate, getOtherUsers } from "../controllers/user.controller.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
 
 const router=express.Router();
@@ -12,4 +12,5 @@ router.put("/profile/:id",isAuthenticated,updateProfile);
 router.get("/all",fetchAllUsers);
 router.get("/:id",fetchUserById);
 router.post("/find/roommate",findRoommate);
+router.get("/get/users",isAuthenticated,getOtherUsers);
 export default router;

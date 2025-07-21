@@ -293,3 +293,18 @@ export const findRoommate = async (req, res) => {
       .json({ message: error.message || "Internal server error", success: false });
   }
 };
+
+
+export const getOtherUsers=async(req,res)=>{
+  try{
+     const currentUserId=req.id;
+     const otherUsers=await User.find({_id:{$ne:currentUserId}}).select("-password");
+     return res.status(200).json(
+      otherUsers,
+     )
+  }
+  catch(error){
+    console.error(error.message || error);
+    return res.status(500).json({message:error.message || "Internal server error"});
+  }
+}

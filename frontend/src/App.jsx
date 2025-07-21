@@ -11,8 +11,10 @@ import Messages from "./pages/Messages";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import UpdateProfile from "./pages/UpdateProfile";
+import { useSelector } from "react-redux";
 
 function App() {
+   let user=useSelector((store)=>store.auth.user);
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
@@ -26,7 +28,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/find-roommate" element={<FindRoommate />} />
-            <Route path="/chat/:id" element={<Chat />} />
+             <Route path="/chat/:userId" element={<Chat user={user} />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

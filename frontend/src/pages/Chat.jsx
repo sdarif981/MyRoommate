@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import io from "socket.io-client";
 import { MESSAGE_API } from "@/constants/constant";
-
+import axios from "axios";
 const socket = io("https://myroommate.onrender.com", {
   withCredentials: true,
   reconnectionAttempts: 5,
@@ -28,10 +28,10 @@ const Chat = ({ user }) => {
 
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`${MESSAGE_API}/${userId}`, {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await axios.get(`${MESSAGE_API}/${userId}`, {
+  withCredentials: true, 
+});
+
 
         if (!response.ok) throw new Error("Failed to fetch messages");
 
@@ -95,12 +95,12 @@ const Chat = ({ user }) => {
     if (!trimmed) return;
 
     try {
-      const response = await fetch(`${MESSAGE_API}/send/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ message: trimmed }),
-      });
+      
+
+const response = await axios.post(`${MESSAGE_API}/send/${userId}`, 
+  { message: trimmed },
+  { withCredentials: true, headers: { "Content-Type": "application/json" } }
+);
 
       if (!response.ok) {
         const errorData = await response.json();

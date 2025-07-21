@@ -5,8 +5,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
-import { USER_API } from "@/constants/constant";
-
+import { MESSAGE_API, USER_API } from "@/constants/constant";
+import axios from "axios";
 const Messages = () => {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,9 +17,10 @@ const Messages = () => {
   useEffect(() => {
     const fetchInbox = async () => {
       try {
-        const res = await fetch(`${USER_API.replace("/user", "")}/message/inbox`, {
-          credentials: "include",
-        });
+       const res = await axios.get(`${MESSAGE_API}/inbox`, {
+  withCredentials: true,
+});
+
 
         if (!res.ok) throw new Error("Failed to fetch inbox");
 

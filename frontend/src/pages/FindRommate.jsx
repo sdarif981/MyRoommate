@@ -93,11 +93,11 @@ const FindRoommate = () => {
       if(response.data.success){
       setUsers(response.data.filteredArray);
       }
-      // toast.success(response.data.message || "Users fetched successfully.");
+      toast.success(response.data.message || "Users fetched successfully.");
     }
     catch(error){
-      // console.log(error);
-      // toast.error(error?.response?.data?.message || "Error fetching users.");
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error fetching users.");
     }
     finally{
       setLoading(false);

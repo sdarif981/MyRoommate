@@ -52,8 +52,8 @@ const Home = () => {
       }
     }
     catch(error){
-      // console.error("Error fetching user data:", error);
-      // toast.error("error updating state");
+      console.error("Error fetching user data:", error);
+      toast.error("error updating state");
     }
    }
    fetchUser();

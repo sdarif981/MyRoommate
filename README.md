@@ -1,6 +1,6 @@
 Sure! Below is the complete **markdown code** you can copy and paste into a file like `README.md`:
 
-```markdown
+
 # MyRoommate
 
 A full-stack matchmaking web app for students to find ideal roommates based on lifestyle preferences and chat with them in real-time.
@@ -27,7 +27,6 @@ A full-stack matchmaking web app for students to find ideal roommates based on l
 - **Real-Time Messaging:** Socket.io
 - **Deployment:** Vercel (Frontend), Render (Backend)
 
----
 
 ## 📁 Project Structure
 

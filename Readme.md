@@ -14,7 +14,8 @@ A full-stack matchmaking web app for students to find ideal roommates based on l
 - 👤 JWT-based user authentication (secure login & registration).
 - 🖼️ Profile picture (DP) upload and display.
 - 💬 Real-time chat between matched users (Socket.io).
-- ⚡ Fast, responsive UI built with modern technologies.
+- 📱 Fully responsive UI for mobile, tablet, and desktop.
+- ⚡ Fast, modern performance with Vite and Tailwind CSS.
 
 ---
 
@@ -89,11 +90,11 @@ App will run at: `http://localhost:5173`
 ## 🧠 What I Learned
 
 - JWT-based authentication and secure routing
-- Managing global state with Redux Toolkit
-- Styling responsive UIs using Tailwind CSS
-- Real-time communication using Socket.io
-- Uploading and displaying user profile images
-- Deploying full-stack apps with Vercel & Render
+- Global state management with Redux Toolkit
+- Building fully responsive layouts with Tailwind CSS
+- Real-time chat using Socket.io
+- Profile picture upload and media handling
+- Deploying full-stack applications (Render + Vercel)
 
 ---
 
@@ -105,10 +106,10 @@ App will run at: `http://localhost:5173`
 ### Search & Filters  
 ![Search](./screenshots/search.png)
 
-### Messages & DP  
+### Messages  
 ![Messages](./screenshots/messages.png)
 
-> *(Replace these with actual images or GitHub-hosted image links)*
+> *(Replace these with real screenshots or hosted image links)*
 
 ---
 

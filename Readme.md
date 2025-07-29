@@ -21,8 +21,8 @@ A full-stack matchmaking web app for students to find ideal roommates based on l
 
 ## 🛠 Tech Stack
 
-- **Frontend:** React + Vite, Tailwind CSS, Redux Toolkit
-- **Backend:** Node.js, Express.js, MongoDB
+- **Frontend:** React + Vite, Tailwind CSS, Redux Toolkit, Axios
+- **Backend:** Node.js, Express.js, MongoDB, Cloudinary, Multer
 - **Authentication:** JSON Web Tokens (JWT)
 - **Real-Time Messaging:** Socket.io
 - **Deployment:** Vercel (Frontend), Render (Backend)
@@ -32,10 +32,40 @@ A full-stack matchmaking web app for students to find ideal roommates based on l
 ## 📁 Project Structure
 
 ```
-MyRoommate/
-├── backend/          # Node.js server (Render deployment)
-├── frontend/         # React client (Vercel deployment)
-└── README.md
+roomate/
+├── backend/
+│   ├── controllers/           # Message & user logic
+│   ├── middleware/            # Auth handling
+│   ├── models/                # MongoDB schemas
+│   ├── routes/                # Express routes
+│   ├── utils/                 # Cloudinary, DB, multer
+│   ├── server.js              # Main backend server      # 
+│   ├── .env
+│   ├── .gitignore
+│   └── package.json
+│
+├── frontend/
+│   ├── public/                # Static assets
+│   └── src/
+│       ├── assets/            # SVGs and logos
+│       ├── components/
+│       │   ├── ui/            # UI components (button, input, etc.)
+│       │   ├── DialogBox.jsx
+│       │   ├── Footer.jsx
+│       │   └── Navbar.jsx
+│       ├── constants/         # Global constants
+│       ├── lib/               # Utility functions
+│       ├── pages/             # Page components
+│       ├── redux/             # State slices & store
+│       ├── App.jsx
+│       ├── main.jsx
+│       └── index.css
+│   ├── vite.config.js
+│   ├── vercel.json
+│   ├── .gitignore
+│   └── package.json
+│
+└── Readme.md
 ```
 
 ---
@@ -109,14 +139,14 @@ App will run at: `http://localhost:5173`
 ### Messages  
 ![Messages](./screenshots/messages.png)
 
-> *(Replace these with real screenshots or hosted image links)*
+
 
 ---
 
 ## 🚀 Deployment Links
 
-- **Frontend (Vercel):** https://my-roommate-zeta.vercel.app/
-- **Backend (Render):** https://myroommate.onrender.com/
+- **Frontend**: [Vercel](https://job-portal-xi-opal.vercel.app/)
+- **Backend**: [Render](https://job-portal-1-m0br.onrender.com)
 
 ---
 
@@ -131,5 +161,18 @@ App will run at: `http://localhost:5173`
 
 ## 🙋‍♂️ Author
 
-**Arif Syed**  
-GitHub: [@sdarif981](https://github.com/sdarif981)
+**Arif Syed**
+
+- 📧 [Email](mailto:sdarif981@gmail.com)  
+- 🧑‍💻 [GitHub](https://github.com/sdarif981)
+
+---
+
+## 📄 License
+
+This project currently does **not** include an open-source license.  
+You may use it for learning purposes only. For commercial or production use, please contact the author.
+
+---
+
+> 🚧 This is an actively developed project. Suggestions and improvements are welcome!

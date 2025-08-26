@@ -82,7 +82,7 @@ const Register = () => {
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleRegister} className="space-y-6">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
@@ -96,7 +96,7 @@ const Register = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -110,7 +110,7 @@ const Register = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"

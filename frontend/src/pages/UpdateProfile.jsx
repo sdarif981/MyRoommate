@@ -71,8 +71,8 @@ const UpdateProfile = ({ open, setOpen }) => {
   const handleSave = async (e) => {
     e.preventDefault();
 
-    console.log("input.smoking:", input.smoking, typeof input.smoking);
-    console.log("input.drinking:", input.drinking, typeof input.drinking);
+    // console.log("input.smoking:", input.smoking, typeof input.smoking);
+    // console.log("input.drinking:", input.drinking, typeof input.drinking);
 
     const formData = new FormData();
     formData.append("name", input.name);
@@ -126,7 +126,7 @@ const UpdateProfile = ({ open, setOpen }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
-        className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto"
+        className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto"
         onInteractOutside={() => setOpen(false)}
       >
         <DialogHeader>
@@ -161,7 +161,7 @@ const UpdateProfile = ({ open, setOpen }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
+            <div className="space-y-2">
               <Label>Name</Label>
               <Input
                 type="text"
@@ -170,7 +170,7 @@ const UpdateProfile = ({ open, setOpen }) => {
                 onChange={changeEventHandler}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>College</Label>
               <Input
                 type="text"
@@ -179,7 +179,7 @@ const UpdateProfile = ({ open, setOpen }) => {
                 onChange={changeEventHandler}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Address</Label>
               <Input
                 type="text"
@@ -188,7 +188,7 @@ const UpdateProfile = ({ open, setOpen }) => {
                 onChange={changeEventHandler}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Gender</Label>
               <Select
                 value={input.gender}
@@ -204,7 +204,7 @@ const UpdateProfile = ({ open, setOpen }) => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Study Habits</Label>
               <Select
                 value={input.studyHabits}
@@ -220,7 +220,7 @@ const UpdateProfile = ({ open, setOpen }) => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Sleep Pattern</Label>
               <Select
                 value={input.sleepPattern}
@@ -236,7 +236,7 @@ const UpdateProfile = ({ open, setOpen }) => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Cleanliness</Label>
               <Select
                 value={input.cleanliness}
@@ -252,7 +252,7 @@ const UpdateProfile = ({ open, setOpen }) => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Noise Tolerance</Label>
               <Select
                 value={input.noiseTolerance}
@@ -289,7 +289,7 @@ const UpdateProfile = ({ open, setOpen }) => {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label>Hobbies</Label>
             <Input
               type="text"
@@ -300,7 +300,7 @@ const UpdateProfile = ({ open, setOpen }) => {
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label>Bio</Label>
             <Textarea
               name="bio"

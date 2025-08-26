@@ -38,15 +38,7 @@ const Login = () => {
     const email = input.email.trim();
     const password = input.password.trim();
 
-    if (!email || !password) {
-      toast.error("Both email and password are required.");
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
-      return;
-    }
+    
 
     setLoading(true);
     try {
@@ -95,7 +87,7 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6" autoComplete="on">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="email" >
                   Email address
                 </Label>
                 <Input
@@ -107,12 +99,12 @@ const Login = () => {
                   required
                   autoFocus
                   placeholder="Enter your email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="password">
                   Password
                 </Label>
                 <Input
@@ -123,7 +115,7 @@ const Login = () => {
                   onChange={handleChange}
                   required
                   placeholder="Enter your password"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                 
                 />
               </div>
 

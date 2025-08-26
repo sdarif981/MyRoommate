@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,27 +13,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import Axios, { all } from "axios";
-import {useEffect} from "react";
+import Axios from "axios";
 import { USER_API } from "@/constants/constant";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
-import { current } from "@reduxjs/toolkit";
 import DialogBox from "@/components/DialogBox";
 
-
-
-
 const FindRoommate = () => {
-  const[users,setUsers]=useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const navigate = useNavigate();
-  const allUsers=useSelector((store)=>store.users.allUsers);
   const [searchQuery, setSearchQuery] = useState("");
-  const user=useSelector((store)=>store.auth.user);
+
+  const navigate = useNavigate();
+  const allUsers = useSelector((store) => store.users.allUsers);
+  const user = useSelector((store) => store.auth.user);
+
   const [filters, setFilters] = useState({
-    gender:"",
+    gender: "",
     studyHabits: "",
     sleepPattern: "",
     cleanliness: "",
@@ -47,7 +44,7 @@ const FindRoommate = () => {
     setSearchQuery(e.target.value.toLowerCase());
   };
 
-  // Handle filter change for dropdowns
+  // Handle dropdown filter change
   const handleFilterChange = (key, value) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
@@ -66,54 +63,55 @@ const FindRoommate = () => {
   const handleChatClick = (id) => {
     if (!user) {
       setIsDialogOpen(true);
-    } else { 
-     
+    } else {
       navigate(`/chat/${id}`);
-    } 
+    }
   };
-  const fetchUsers=async()=>{
-    try{
+
+  // Fetch users (memoized)
+  const fetchUsers = useCallback(async () => {
+    try {
       setLoading(true);
-      const payload={
+      const payload = {
         searchQuery,
-        filters, 
-        users:allUsers,
-        currentUserId:user?._id,
+        filters,
+        users: allUsers,
+        currentUserId: user?._id,
       };
-      console.log(payload);
-      const response =await Axios.post(`${USER_API}/find/roommate`,
-       payload,
-       {
-        headers:{
-          "Content-Type":"application/json",
-        },
-        withCredentials:true,
-      }
+
+      const response = await Axios.post(
+        `${USER_API}/find/roommate`,
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
       );
-      if(response.data.success){
-      setUsers(response.data.filteredArray);
+
+      if (response.data.success) {
+        setUsers(response.data.filteredArray);
       }
-      toast.success(response.data.message || "Users fetched successfully.");
-    }
-    catch(error){
-      console.log(error);
+    } catch (error) {
+      console.error(error);
       toast.error(error?.response?.data?.message || "Error fetching users.");
-    }
-    finally{
+    } finally {
       setLoading(false);
     }
-  }
-  // Filter users based on search and selected filters
-  useEffect(()=>{
- 
-    fetchUsers();
-  },[searchQuery,filters]);
+  }, [searchQuery, filters, allUsers, user]);
+
+  // Debounce fetch when searchQuery/filters change
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      fetchUsers();
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [fetchUsers]);
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      
-
       {/* Main Content */}
-      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:min-w-6xl sm:min-w-0">
+      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-3xl font-bold text-gray-900 text-center mb-8 mt-5">
           Find Your Perfect Roommate
         </h2>
@@ -126,7 +124,7 @@ const FindRoommate = () => {
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="Search by name, college, address,habits or bio..."
+              placeholder="Search by name, college, address, habits or bio..."
               className="mt-1 w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
@@ -135,7 +133,10 @@ const FindRoommate = () => {
             {/* Gender */}
             <div>
               <Label className="text-gray-700 font-medium">Gender</Label>
-              <Select onValueChange={(value) => handleFilterChange("gender", value)}>
+              <Select
+                value={filters.gender}
+                onValueChange={(value) => handleFilterChange("gender", value)}
+              >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select Gender" />
                 </SelectTrigger>
@@ -150,7 +151,12 @@ const FindRoommate = () => {
             {/* Study Habits */}
             <div>
               <Label className="text-gray-700 font-medium">Study Habits</Label>
-              <Select onValueChange={(value) => handleFilterChange("studyHabits", value)}>
+              <Select
+                value={filters.studyHabits}
+                onValueChange={(value) =>
+                  handleFilterChange("studyHabits", value)
+                }
+              >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select Study Habit" />
                 </SelectTrigger>
@@ -165,7 +171,12 @@ const FindRoommate = () => {
             {/* Sleep Pattern */}
             <div>
               <Label className="text-gray-700 font-medium">Sleep Pattern</Label>
-              <Select onValueChange={(value) => handleFilterChange("sleepPattern", value)}>
+              <Select
+                value={filters.sleepPattern}
+                onValueChange={(value) =>
+                  handleFilterChange("sleepPattern", value)
+                }
+              >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select Sleep Pattern" />
                 </SelectTrigger>
@@ -180,7 +191,12 @@ const FindRoommate = () => {
             {/* Cleanliness */}
             <div>
               <Label className="text-gray-700 font-medium">Cleanliness</Label>
-              <Select onValueChange={(value) => handleFilterChange("cleanliness", value)}>
+              <Select
+                value={filters.cleanliness}
+                onValueChange={(value) =>
+                  handleFilterChange("cleanliness", value)
+                }
+              >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select Cleanliness" />
                 </SelectTrigger>
@@ -195,7 +211,12 @@ const FindRoommate = () => {
             {/* Noise Tolerance */}
             <div>
               <Label className="text-gray-700 font-medium">Noise Tolerance</Label>
-              <Select onValueChange={(value) => handleFilterChange("noiseTolerance", value)}>
+              <Select
+                value={filters.noiseTolerance}
+                onValueChange={(value) =>
+                  handleFilterChange("noiseTolerance", value)
+                }
+              >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select Noise Tolerance" />
                 </SelectTrigger>
@@ -227,77 +248,83 @@ const FindRoommate = () => {
           </div>
         </div>
 
-        {
-          loading?(
-            /* Loading Spinner */
-            <div className="flex justify-center items-center h-64">
-              Loading...
-            </div>
-          ):(
-            /* Filtered Users Section */
-        <div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          {users.length} Roommate{users.length !== 1 ? "s" : ""} Found
-        </h3>
-        {users.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {users.map((user) => (
-                <Card
-                key={user.id}
-                className="hover:shadow-lg transition-shadow duration-300 border-gray-200"
-              >
-                <CardHeader className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={user.avatarUrl} alt={user.name} />
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
-                      {user.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    {user.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">College:</span> {user.college}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Address:</span> {user.address}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Habits:</span> {user.studyHabits}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Sleep:</span> {user.sleepPattern}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Cleanliness:</span> {user.cleanliness}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Noise:</span> {user.noiseTolerance}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Bio:</span> {user.bio}
-                  </p>
-                  <Button
-                  onClick={()=>handleChatClick(user._id)}
-                    className="mt-4 w-full bg-blue-600 cursor-pointer hover:bg-blue-700 text-white transition-colors"
-                  >
-                    Message
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+        {/* Results Section */}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
           </div>
         ) : (
-          <p className="text-center text-gray-500">No roommates match your criteria.</p>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              {users.length} Roommate{users.length !== 1 ? "s" : ""} Found
+            </h3>
+            {users.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {users.map((u) => (
+                  <Card
+                    key={u._id}
+                    className="hover:shadow-lg transition-shadow duration-300 border-gray-200"
+                  >
+                    <CardHeader className="flex items-center gap-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={u.avatarUrl} alt={u.name} />
+                        <AvatarFallback className="bg-blue-100 text-blue-600">
+                          {u.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <CardTitle className="text-lg font-semibold text-gray-900">
+                        {u.name || "Unknown"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">College:</span>{" "}
+                        {u.college || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Address:</span>{" "}
+                        {u.address || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Habits:</span>{" "}
+                        {u.studyHabits || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Sleep:</span>{" "}
+                        {u.sleepPattern || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Cleanliness:</span>{" "}
+                        {u.cleanliness || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Noise:</span>{" "}
+                        {u.noiseTolerance || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Bio:</span>{" "}
+                        {u.bio || "No bio provided"}
+                      </p>
+                      <Button
+                        onClick={() => handleChatClick(u._id)}
+                        className="mt-4 w-full bg-blue-600 cursor-pointer hover:bg-blue-700 text-white transition-colors"
+                      >
+                        Message
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">
+                No roommates match your criteria. Try adjusting filters.
+              </p>
+            )}
+          </div>
         )}
       </div>
-          )
-        }
-      </div>
 
-      <DialogBox open={isDialogOpen} onClose={() => setIsDialogOpen(false)} />             
+      <DialogBox open={isDialogOpen} onClose={() => setIsDialogOpen(false)} />
     </div>
   );
 };

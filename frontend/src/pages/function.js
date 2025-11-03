@@ -25,8 +25,8 @@ const criteriaList = [
   let totalScore = 0;
 
   for (const { key, weight, type } of criteriaList) {
-    if (a[key] == null || b[key] == null) continue; // skip missing data
     totalWeight += weight;
+    if (a[key] == null || b[key] == null) continue; // skip missing data
 
     let matchScore = 0;
 

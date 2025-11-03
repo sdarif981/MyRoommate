@@ -111,7 +111,7 @@ const FindRoommate = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Main Content */}
-      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-3xl font-bold text-gray-900 text-center mb-8 mt-5">
           Find Your Perfect Roommate
         </h2>

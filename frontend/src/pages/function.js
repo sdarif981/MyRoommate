@@ -1,15 +1,26 @@
 export const CalculateMatchScore = (a, b) => {
   // Define criteria with weights and comparison type
   const criteriaList = [
-    { key: "college", weight: 0.1, type: "string" },
-    { key: "sleepPattern", weight: 0.15, type: "exact" },
-    { key: "studyHabits", weight: 0.1, type: "exact" },
-    { key: "cleanliness", weight: 0.15, type: "exact" },
-    { key: "noiseTolerance", weight: 0.15, type: "exact" },
-    { key: "smoking", weight: 0.1, type: "exact" },
-    { key: "drinking", weight: 0.1, type: "exact" },
-    { key: "hobbies", weight: 0.15, type: "array" },
-  ];
+  // Academic / location compatibility
+  { key: "college", weight: 0.08, type: "string" },
+  { key: "address", weight: 0.05, type: "string" },
+
+  // Lifestyle & personality
+  { key: "gender", weight: 0.05, type: "exact" },
+  { key: "studyHabits", weight: 0.1, type: "exact" },
+  { key: "sleepPattern", weight: 0.1, type: "exact" },
+  { key: "cleanliness", weight: 0.1, type: "exact" },
+  { key: "noiseTolerance", weight: 0.1, type: "exact" },
+  { key: "smoking", weight: 0.1, type: "exact" },
+  { key: "drinking", weight: 0.1, type: "exact" },
+
+  // Interests
+  { key: "hobbies", weight: 0.15, type: "array" },
+
+  // Personality text (bio)
+  { key: "bio", weight: 0.07, type: "string" },
+];
+
 
   let totalWeight = 0;
   let totalScore = 0;
@@ -58,23 +69,32 @@ function getStringSimilarity(str1, str2) {
   const longerLength = longer.length;
   if (longerLength === 0) return 1.0;
   const editDistance = getEditDistance(longer, shorter);
-  return (longerLength - editDistance) / parseFloat(longerLength);
+  return (longerLength - editDistance) / longerLength;
 }
 
 function getEditDistance(a, b) {
-  const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
-  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      matrix[i][j] =
-        b.charAt(i - 1) === a.charAt(j - 1)
-          ? matrix[i - 1][j - 1]
-          : Math.min(
-              matrix[i - 1][j - 1] + 1,
-              matrix[i][j - 1] + 1,
-              matrix[i - 1][j] + 1
-            );
+  const m = a.length;
+  const n = b.length;
+
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = 1 + Math.min(
+          dp[i - 1][j],    // delete
+          dp[i][j - 1],    // insert
+          dp[i - 1][j - 1] // replace
+        );
+      }
     }
   }
-  return matrix[b.length][a.length];
+
+  return dp[m][n];
 }
+

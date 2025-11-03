@@ -1,25 +1,24 @@
 export const CalculateMatchScore = (a, b) => {
   // Define criteria with weights and comparison type
-  const criteriaList = [
-  // Academic / location compatibility
+const criteriaList = [
+  //  Academic / location compatibility
   { key: "college", weight: 0.08, type: "string" },
-  { key: "address", weight: 0.05, type: "string" },
+  { key: "address", weight: 0.07, type: "string" },
 
-  // Lifestyle & personality
-  { key: "gender", weight: 0.05, type: "exact" },
-  { key: "studyHabits", weight: 0.1, type: "exact" },
-  { key: "sleepPattern", weight: 0.1, type: "exact" },
-  { key: "cleanliness", weight: 0.1, type: "exact" },
-  { key: "noiseTolerance", weight: 0.1, type: "exact" },
-  { key: "smoking", weight: 0.1, type: "exact" },
-  { key: "drinking", weight: 0.1, type: "exact" },
+  //  Lifestyle & personality — most important
+  { key: "gender", weight: 0.18, type: "exact" },
+  { key: "studyHabits", weight: 0.18, type: "exact" },
+  { key: "sleepPattern", weight: 0.18, type: "exact" },
+  { key: "cleanliness", weight: 0.12, type: "exact" },
+  { key: "noiseTolerance", weight: 0.12, type: "exact" },
+  { key: "smoking", weight: 0.07, type: "exact" },
+  { key: "drinking", weight: 0.07, type: "exact" },
 
-  // Interests
-  { key: "hobbies", weight: 0.15, type: "array" },
-
-  // Personality text (bio)
-  { key: "bio", weight: 0.07, type: "string" },
+  //  Interests & vibe
+  { key: "hobbies", weight: 0.09, type: "array" },
+  { key: "bio", weight: 0.04, type: "string" },
 ];
+
 
 
   let totalWeight = 0;

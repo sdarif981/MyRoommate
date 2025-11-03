@@ -45,7 +45,8 @@ const criteriaList = [
           const setB = new Set(b[key].map((h) => h.toLowerCase()));
           const intersection = [...setA].filter((h) => setB.has(h));
           const union = new Set([...setA, ...setB]);
-          matchScore = intersection.length / union.size; // Jaccard similarity
+          matchScore = union.size === 0 ? 0 : intersection.length / union.size;
+ // Jaccard similarity
         }
         break;
 
